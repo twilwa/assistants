@@ -4,6 +4,7 @@
 
 // docker run --rm code-interpreter python -c "print(1+1)"
 
+use async_openai::types::FunctionObject;
 use async_recursion::async_recursion;
 
 use assistants_core::function_calling::generate_function_call;
@@ -86,7 +87,7 @@ pub async fn safe_interpreter(
     attempt: usize,
     max_attempts: usize,
     model_config: InterpreterModelConfig,
-) -> Result<String, InterpreterError> {
+) -> Result<(String, String), InterpreterError> {
     if attempt >= max_attempts {
         return Err(InterpreterError {
             message: String::from("Max attempts reached"),
@@ -95,7 +96,7 @@ pub async fn safe_interpreter(
     }
 
     match interpreter(user_input.clone(), model_config.clone()).await {
-        Ok((result, _model_output)) => Ok(result),
+        Ok((code_output, code)) => Ok((code_output, code)),
         Err(e) => {
             eprintln!("Error: {}", e);
             let input = format!(
@@ -173,12 +174,13 @@ So generate the Python code that we will execute that can help the user with his
     // Generate Python code
     let function_call_input = FunctionCallInput {
         function: Function {
+            metadata: None,
             assistant_id: Uuid::default().to_string(), // ! ??
             user_id: Uuid::default().to_string(),
-            inner: ChatCompletionFunctions {
+            inner: FunctionObject {
                 name: "exec".to_string(),
                 description: Some("A function that executes Python code".to_string()),
-                parameters: json!({
+                parameters: Some(json!({
                     "type": "object",
                     "required": ["code"],
                     "properties": {
@@ -187,7 +189,7 @@ So generate the Python code that we will execute that can help the user with his
                             "description": "The Python code to execute"
                         }
                     }
-                }),
+                })),
             },
         },
         user_context: build_prompt(&user_input),
@@ -375,10 +377,10 @@ mod tests {
                 input,
                 result
             );
-            let result_string = result.unwrap();
+            let (code_output, code) = result.unwrap();
             println!(
                 "Problem to solve: {}. \nOutput: {}\nExpected output: {}",
-                input, result_string, expected_output
+                input, code_output, expected_output
             );
 
             let p = "You are an AI that checks the correctness of math results. 
@@ -397,7 +399,7 @@ Rules:
                 p,
                 &format!(
                     "User input: {}\nResult: {}. Official solution: {}. Is my result correct?",
-                    input, result_string, expected_output
+                    input, code_output, expected_output
                 ),
                 Some(0.0),
                 -1,

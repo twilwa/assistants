@@ -90,6 +90,7 @@ pub async fn submit_tool_outputs(
 
     // Iterate over tool_outputs and update each tool_call in the database
     for tool_output in tool_outputs {
+        info!("Updating tool call for tool_call_id: {}", tool_output.id);
         // TODO parallel
         sqlx::query!(
             r#"
@@ -495,6 +496,7 @@ pub async fn update_run_status(
     if let Some(action) = required_action {
         futures::stream::iter(action.submit_tool_outputs.tool_calls.iter())
             .then(|tool_call| async move {
+                info!("Creating tool call for tool_call_id: {}", tool_call.id);
                 let _ = sqlx::query!(
                     r#"
                     INSERT INTO tool_calls (id, run_id, user_id)
@@ -703,8 +705,9 @@ mod tests {
 
     use super::*;
     use async_openai::types::{
-        AssistantObject, FunctionCall, RunToolCallObject, SubmitToolOutputs,
+        AssistantObject, FunctionCall, RunToolCallObject, SubmitToolOutputs, ThreadObject
     };
+    use assistants_core::models::{Thread};
     use dotenv::dotenv;
     use sqlx::postgres::PgPoolOptions;
     use std::env;
@@ -734,7 +737,7 @@ mod tests {
     async fn reset_db(pool: &PgPool) {
         // TODO should also purge minio
         sqlx::query!(
-            "TRUNCATE assistants, threads, messages, runs, functions, tool_calls RESTART IDENTITY"
+            "TRUNCATE assistants, threads, messages, runs, functions, tool_calls, chunks, run_steps RESTART IDENTITY"
         )
         .execute(pool)
         .await
@@ -765,7 +768,16 @@ mod tests {
         };
         let assistant = create_assistant(&pool, &assistant).await.unwrap();
         println!("assistant: {:?}", assistant);
-        let thread = create_thread(&pool, &Uuid::default().to_string())
+                let thread_object = Thread {
+            inner: ThreadObject {
+                id: "".to_string(),
+                object: "".to_string(),
+                created_at: 0,
+                metadata: None,
+            },
+            user_id: Uuid::default().to_string(),
+        };
+        let thread = create_thread(&pool, &thread_object)
             .await
             .unwrap(); // Create a new thread
         println!("thread: {:?}", thread);
@@ -841,8 +853,16 @@ mod tests {
         )
         .await
         .unwrap();
-
-        let thread = create_thread(&pool, &Uuid::default().to_string())
+        let thread_object = Thread {
+            inner: ThreadObject {
+                id: "".to_string(),
+                object: "".to_string(),
+                created_at: 0,
+                metadata: None,
+            },
+            user_id: Uuid::default().to_string(),
+        };
+        let thread = create_thread(&pool, &thread_object)
             .await
             .unwrap(); // Create a new thread
         let run = create_run(
@@ -887,7 +907,16 @@ mod tests {
         reset_db(&pool).await;
 
         // create run and thread and assistant
-        let thread = create_thread(&pool, &Uuid::default().to_string())
+        let thread_object = Thread {
+            inner: ThreadObject {
+                id: "".to_string(),
+                object: "".to_string(),
+                created_at: 0,
+                metadata: None,
+            },
+            user_id: Uuid::default().to_string(),
+        };
+        let thread = create_thread(&pool, &thread_object)
             .await
             .unwrap(); // Create a new thread
         let assistant = create_assistant(
@@ -984,7 +1013,16 @@ mod tests {
         .unwrap();
 
         // Create thread
-        let thread = create_thread(&pool, &Uuid::default().to_string())
+        let thread_object = Thread {
+            inner: ThreadObject {
+                id: "".to_string(),
+                object: "".to_string(),
+                created_at: 0,
+                metadata: None,
+            },
+            user_id: Uuid::default().to_string(),
+        };
+        let thread = create_thread(&pool, &thread_object)
             .await
             .unwrap();
 

@@ -1,26 +1,31 @@
 
 <p align="center">
-<img width="600" alt="assistants" src="https://github.com/stellar-amenities/assistants/assets/25003283/77d78c9a-cc44-492a-b085-8f22e9d5e4ef">
-  <h1 align="center">⭐️ Open Source Assistants API</h1>
-  <h2 align="center">Build Powerful AI Assistants In-House, On Your Terms</h2>
-  <h4 align="center">75% Cheaper & 23x Faster Assistants. Same API/SDK.</h4>
+<img width="600" alt="assistants" src="https://github.com/stellar-amenities/assistants/assets/25003283/353b4cdc-41c1-42fd-a294-d37a7b30b2d7">
+  <h1 align="center">⭐️ Open Source Edge Assistants API</h1>
+  <h2 align="center">Build Powerful AI Assistants In-House, On Your Terms, That run on the Edge</h2>
+  <h4 align="center">100% Privacy, 75% Cheaper & 23x Faster Assistants. For the Edge. Same API/SDK.</h4>
   <p align="center">
     <a href='https://codespaces.new/stellar-amenities/assistants?quickstart=1'><img src='https://github.com/codespaces/badge.svg' alt='Open in GitHub Codespaces' style='max-width: 100%;'></a>
     <br />
     <a href="https://discord.gg/pj5VRqqs84"><img alt="Join Discord" src="https://img.shields.io/discord/1066022656845025310?color=blue&style=for-the-badge"></a>
-    <hr />
-    <a href="https://cal.com/louis030195/unleash-llms">📞 Need Support? We're here for you.</a>
-    <br />
-    <a href="https://link.excalidraw.com/readonly/YSE7DNzB2LmEPfVdCqq3">🖼️ How it Works – Visual Guide</a>
-    <br />
-    <a href="https://github.com/stellar-amenities/assistants/issues/new?assignees=&labels=enhancement">✨ Suggest a Feature</a>
-    <br />
-    <a href="https://github.com/stellar-amenities/assistants/issues/new?assignees=&labels=bug">❤️‍🩹 Found a Bug? Let us know.</a>
   </p>
 </p>
 
 
+-----
+
+<p align="center">
+    <a href="https://link.excalidraw.com/readonly/YSE7DNzB2LmEPfVdCqq3">🖼️ Infra</a>
+    <a href="https://github.com/stellar-amenities/assistants/issues/new?assignees=&labels=enhancement">✨ Feature?</a>
+    <a href="https://github.com/stellar-amenities/assistants/issues/new?assignees=&labels=bug">❤️‍🩹 Bug?</a>
+</p>
+
+-----
+
+
 # Quickstart
+
+<img width="600" alt="assistants" src="https://github.com/stellar-amenities/assistants/assets/25003283/77d78c9a-cc44-492a-b085-8f22e9d5e4ef">
 
 Get started in less than a minute through GitHub Codespaces:
 
@@ -51,48 +56,62 @@ Run the [quickstart](./examples/quickstart.js):
 node examples/quickstart.js
 ```
 
-## Table of contents
+
+## 📏 Principles
+
+Assistants is a tool that is in continuous development, with the aim of always offering better infrastructure for Edge LLMs. To achieve this, it is based on several principles that define its functionality and scope.
 
 <details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li><a href="#why-open-source-assistants-api">Why Open Source Assistants API?</a></li>
-    <li><a href="#whats-cooking-latest-news">What's Cooking? – Latest News</a></li>
-    <li><a href="#key-features">Key Features</a></li>
-    <li><a href="#what-can-you-build-with-assistants">What Can You Build with Assistants?</a></li>
-    <li><a href="#join-the-movement">Join the Movement</a></li>
-    <li><a href="#deployment">Deployment</a></li>
-    <li><a href="#faq">FAQ</a></li>
-  </ol>
+<summary><strong>Edge-first</strong></summary>
+<p>
+
+Assistants does not require internet access by focusing on open source LLMs. Which means you own your data and your models.
+
+</p>
+</details>
+
+<details>
+<summary><strong>OpenAI-compatible</strong></summary>
+<p>
+
+OpenAI spent a large amount of the best brain power to design this API, which makes it an incredible experience for developers.
+
+</p>
+</details>
+
+<details>
+<summary><strong>Reliable and deterministic</strong></summary>
+<p>
+
+Assistants focus on reliability and being as deterministic as possible by default. That's why everything has to be tested and benchmarked.
+
+</p>
+</details>
+
+<details>
+<summary><strong>Flexible</strong></summary>
+<p>
+
+A minimal number of hard-coded prompts and behaviors, a wide range of models, infrastructure components and deployment options and it play well with the open-source ecosystem, while only integrating projects that have stood the test of time.
+
+</p>
 </details>
 
 
-## Why Open Source Assistants API?
-- **Full Control**: Own your data, your models, and your destiny.
-- **No Hidden Costs**: Absolutely free. Seriously, no strings attached.
-- **Customizable**: Tailor the AI to your specific needs and use cases.
-- **Offline Capabilities**: Perfect for edge cases or internet-free zones.
-- **OpenAI Compatibility**: Love OpenAI's API? We play nice with that too.
-- **Simplicity**: Easy setup, no steep learning curve.
-- **Non-woke style**: Get rid of OpenAI Woke/Brainwashed/PC models.
-- **Unleashed code interpreter**: OpenAI Code interpreter is not allowed to do other things than processing data (e.g. cannot do web scrapping, etc.). This one is unleashed.
 
-## What's Cooking? – Latest News
+## ⭐️ Latest News
 
-- [2023/08/19] 🔥 New example: Open source LLM with code interpreter. [Learn more](./examples/hello-world-code-interpreter-mixtral-nodejs/README.md).
-- [2023/08/12] 🔥 New example: Open source LLM with function calling. [Learn more](./examples/hello-world-intel-neural-chat-nodejs-function-calling/README.md).
-- [2023/29/11] 🔥 New example: Using mistral-7b, an open source LLM. [Check it out](./examples/hello-world-mistral-curl/README.md).
+- [2024/01/19] 🔥 Action tool. Let your Assistant make requests to APIs.
+- [2023/12/19] 🔥 New example: Open source LLM with code interpreter. [Learn more](./examples/hello-world-code-interpreter-mixtral-nodejs/README.md).
+- [2023/12/08] 🔥 New example: Open source LLM with function calling. [Learn more](./examples/hello-world-intel-neural-chat-nodejs-function-calling/README.md).
+- [2023/11/29] 🔥 New example: Using mistral-7b, an open source LLM. [Check it out](./examples/hello-world-mistral-curl/README.md).
 
-## Key Features
+## ✨ Key Features
 - [x] **Code Interpreter**: Runs Python code in a sandboxed environment. (beta)
 - [x] **Knowledge Retrieval**: Retrieves external knowledge or documents.
 - [x] **Function Calling**: Defines and executes custom functions.
+- [x] **Actions**: Execute requests to external APIs, automatically.
 - [x] **File Handling**: Supports a range of file formats.
-- [ ] **Multimodal**: Supports audio, images, and text.
-  - [ ] image audio text 
-  - [ ] audio text
-  - [ ] image text (soon)
-  - [x] text
 
 ## Join the Movement
 - **For Developers**: We've got the docs, tools, and a community ready to help you build what's next.
@@ -113,6 +132,7 @@ Examples of LLM APIs that does not support OpenAI API-like, that you can't use:
 - [llama.cpp server example](https://github.com/ggerganov/llama.cpp/tree/master/examples/server)
 
 Examples of LLM APIs that does support OpenAI API-like, that you can use:
+- MC-LLM
 - [FastChat (good if you have a mac)](https://github.com/stellar-amenities/assistants/tree/main/examples/hello-world-mistral-curl)
 - [vLLM (good if you have a modern gpu)](https://docs.vllm.ai/en/latest/getting_started/quickstart.html#openai-compatible-server)
 - [Perplexity API](https://github.com/stellar-amenities/assistants/tree/main/examples/hello-world-code-interpreter-mixtral-nodejs)
@@ -124,6 +144,8 @@ Examples of LLM APIs that does support OpenAI API-like, that you can use:
 <details>
 <summary>What's the difference with LangChain?</summary>
 LangChain offers detailed control over AI conversations, while OpenAI's Assistants API simplifies the process, managing conversation history, data/vector store, and tool switching for you.
+
+Assistants is focused on edge use cases with high reliability requirements.
 </details>
 
 <details>
@@ -139,5 +161,4 @@ We recommend switching to the Assistants API for a more streamlined experience, 
 <details>
 <summary>Does the Assistants API support audio and images?</summary>
 Images soon, working on it.
-Audio in a few weeks.
 </details>

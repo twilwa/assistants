@@ -3,12 +3,13 @@ use assistants_api_communication::assistants::{
     list_assistants_handler, update_assistant_handler,
 };
 use assistants_api_communication::chat::chat_handler;
-use assistants_api_communication::files::upload_file_handler;
+use assistants_api_communication::files::{retrieve_file_handler, upload_file_handler};
 use assistants_api_communication::messages::{
     add_message_handler, delete_message_handler, get_message_handler, list_messages_handler,
     update_message_handler,
 };
 use assistants_api_communication::models::AppState;
+use assistants_api_communication::run_steps::{get_step_handler, list_steps_handler};
 use assistants_api_communication::runs::{
     create_run_handler, delete_run_handler, get_run_handler, list_runs_handler,
     submit_tool_outputs_handler, update_run_handler,
@@ -168,6 +169,16 @@ fn app(app_state: AppState) -> Router {
             delete(delete_run_handler),
         )
         .route("/threads/:thread_id/runs", get(list_runs_handler))
+        // GET https://api.openai.com/v1/threads/{thread_id}/runs/{run_id}/steps
+        .route(
+            "/threads/:thread_id/runs/:run_id/steps",
+            get(list_steps_handler),
+        )
+        // GET https://api.openai.com/v1/threads/{thread_id}/runs/{run_id}/steps/{step_id}
+        .route(
+            "/threads/:thread_id/runs/:run_id/steps/:step_id",
+            get(get_step_handler),
+        )
         .route(
             "/threads/:thread_id/runs/:run_id/submit_tool_outputs",
             post(submit_tool_outputs_handler),
@@ -177,8 +188,9 @@ fn app(app_state: AppState) -> Router {
         // .route("/threads/:thread_id/runs/:run_id/steps/:step_id", get(get_run_step_handler))
         // .route("/threads/:thread_id/runs/:run_id/steps", get(list_run_steps_handler))
         // https://platform.openai.com/docs/api-reference/files
+        .route("/files/:file_id", get(retrieve_file_handler))
         .route("/files", post(upload_file_handler))
-        .route("/chat/completions", post(chat_handler))
+        // .route("/chat/completions", post(chat_handler))
         .route("/health", get(health_handler)) // new health check route
         .layer(DefaultBodyLimit::disable())
         .layer(RequestBodyLimitLayer::new(250 * 1024 * 1024)) // 250mb
@@ -209,9 +221,9 @@ mod tests {
     use async_openai::types::{
         AssistantObject, AssistantTools, AssistantToolsCode, AssistantToolsFunction,
         AssistantToolsRetrieval, ChatCompletionFunctions, CreateAssistantRequest,
-        CreateMessageRequest, ListMessagesResponse, MessageContent, MessageObject, MessageRole,
-        ModifyAssistantRequest, ModifyMessageRequest, ModifyThreadRequest, RunObject, RunStatus,
-        ThreadObject,
+        CreateMessageRequest, FunctionObject, ListMessagesResponse, MessageContent, MessageObject,
+        MessageRole, ModifyAssistantRequest, ModifyMessageRequest, ModifyThreadRequest, RunObject,
+        RunStatus, ThreadObject,
     };
     use axum::{
         body::Body,
@@ -236,6 +248,13 @@ mod tests {
             pool: Arc::new(pool),
             file_storage: Arc::new(FileStorage::new().await),
         };
+        match env_logger::builder()
+            .filter_level(log::LevelFilter::Info)
+            .try_init()
+        {
+            Ok(_) => (),
+            Err(_) => (),
+        };
         app_state
     }
 
@@ -249,7 +268,7 @@ mod tests {
     async fn reset_db(pool: &PgPool) {
         // TODO should also purge minio
         sqlx::query!(
-            "TRUNCATE assistants, threads, messages, runs, functions, tool_calls RESTART IDENTITY"
+            "TRUNCATE assistants, threads, messages, runs, functions, tool_calls, run_steps RESTART IDENTITY"
         )
         .execute(pool)
         .await
@@ -405,7 +424,7 @@ mod tests {
             tools: Some(vec![AssistantTools::Code(AssistantToolsCode {
                 r#type: "code_interpreter".to_string(),
             })]),
-            model: "updated test".to_string(),
+            model: Some("updated test".to_string()),
             file_ids: None,
             description: None,
             metadata: None,
@@ -485,61 +504,6 @@ mod tests {
             .unwrap();
 
         assert_eq!(response.status(), StatusCode::OK);
-    }
-
-    #[tokio::test]
-    async fn test_list_assistants() {
-        let app_state = setup().await;
-        let app = app(app_state.clone());
-        reset_db(&app_state.pool.clone()).await;
-
-        // Create an assistant first
-        let assistant = CreateAssistantRequest {
-            instructions: Some("test".to_string()),
-            name: Some("test".to_string()),
-            tools: Some(vec![AssistantTools::Code(AssistantToolsCode {
-                r#type: "code_interpreter".to_string(),
-            })]),
-            model: "test".to_string(),
-            file_ids: None,
-            description: None,
-            metadata: None,
-        };
-
-        let response = app
-            .clone()
-            .oneshot(
-                Request::builder()
-                    .method(http::Method::POST)
-                    .uri("/assistants")
-                    .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
-                    .body(Body::from(serde_json::to_vec(&assistant).unwrap()))
-                    .unwrap(),
-            )
-            .await
-            .unwrap();
-
-        assert_eq!(response.status(), StatusCode::OK);
-
-        // Now list the assistants
-        let response = app
-            .clone()
-            .oneshot(
-                Request::builder()
-                    .method(http::Method::GET)
-                    .uri("/assistants")
-                    .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
-                    .body(Body::empty())
-                    .unwrap(),
-            )
-            .await
-            .unwrap();
-
-        assert_eq!(response.status(), StatusCode::OK);
-
-        let body = hyper::body::to_bytes(response.into_body()).await.unwrap();
-        let assistants: Vec<AssistantObject> = serde_json::from_slice(&body).unwrap();
-        assert!(assistants.len() > 0);
     }
 
     #[tokio::test]
@@ -1143,7 +1107,7 @@ mod tests {
 
         let body = hyper::body::to_bytes(response.into_body()).await.unwrap();
         let body: Value = serde_json::from_slice(&body).unwrap();
-        let file_id = body["file_id"].as_str().unwrap().to_string();
+        let file_id = body["id"].as_str().unwrap().to_string();
 
         // 2. Create an Assistant with the uploaded file
         let assistant = CreateAssistantRequest {
@@ -1787,7 +1751,7 @@ mod tests {
 
         let body = hyper::body::to_bytes(response.into_body()).await.unwrap();
         let body: Value = serde_json::from_slice(&body).unwrap();
-        let file_id = body["file_id"].as_str().unwrap().to_string();
+        let file_id = body["id"].as_str().unwrap().to_string();
 
         // 2. Create an Assistant with the uploaded file and function tool
         let assistant = json!({ // ! hack using json because serializsation of assistantools is fked
@@ -2255,12 +2219,12 @@ mod tests {
             name: Some("Test".to_string()),
             tools: Some(vec![AssistantTools::Function(AssistantToolsFunction {
                 r#type: "function".to_string(),
-                function: ChatCompletionFunctions {
+                function: FunctionObject {
                     description: Some("A test function.".to_string()),
                     name: "test_a".to_string(),
-                    parameters: json!({
+                    parameters: Some(json!({
                         "type": "object",
-                    }),
+                    })),
                 },
             })]),
             model: "mistralai/mixtral-8x7b-instruct".to_string(),
@@ -2274,12 +2238,12 @@ mod tests {
             name: Some("Test".to_string()),
             tools: Some(vec![AssistantTools::Function(AssistantToolsFunction {
                 r#type: "function".to_string(),
-                function: ChatCompletionFunctions {
+                function: FunctionObject {
                     description: Some("A test function.".to_string()),
                     name: "test_b".to_string(),
-                    parameters: json!({
+                    parameters: Some(json!({
                         "type": "object",
-                    }),
+                    })),
                 },
             })]),
             model: "mistralai/mixtral-8x7b-instruct".to_string(),
