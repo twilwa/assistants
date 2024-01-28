@@ -50,6 +50,8 @@ mod tests {
         trace::TraceLayer,
     }; // for `oneshot` and `ready`
 
+    
+
     /// Having a function that produces our app makes it easy to call it from tests
     /// without having to create an HTTP server.
     #[allow(dead_code)]
@@ -141,6 +143,7 @@ mod tests {
         let pool_clone = app_state.pool.clone();
 
         reset_db(&app_state.pool).await;
+        let model_name = std::env::var("TEST_MODEL_NAME").unwrap_or_else(|_| "mistralai/mixtral-8x7b-instruct".to_string());
 
         let assistant = CreateAssistantRequest {
             instructions: Some(
@@ -152,7 +155,7 @@ mod tests {
                 r#type: "action".to_string(),
                 data: Some(serde_yaml::from_str(OPENAPI_SPEC).unwrap()),
             })]),
-            model: "mistralai/mixtral-8x7b-instruct".to_string(),
+            model: model_name.to_string(),
             file_ids: None,
             description: None,
             metadata: None,

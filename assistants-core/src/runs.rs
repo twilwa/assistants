@@ -988,6 +988,8 @@ mod tests {
         let pool = setup().await;
         reset_db(&pool).await;
         // Create assistant
+        let model_name = std::env::var("TEST_MODEL_NAME").unwrap_or_else(|_| "mistralai/mixtral-8x7b-instruct".to_string());
+
         let assistant = create_assistant(
             &pool,
             &Assistant {
@@ -997,7 +999,7 @@ mod tests {
                     created_at: 0,
                     name: Some("Math Tutor".to_string()),
                     description: None,
-                    model: "mistralai/mixtral-8x7b-instruct".to_string(),
+                    model: model_name,
                     instructions: Some(
                         "You are a personal math tutor. Write and run code to answer math questions."
                             .to_string(),
